@@ -9,15 +9,52 @@ import static java.awt.BorderLayout.*;
 public class GUI extends JFrame {
 
     private Messagerie messagerieAssociee;
+    public JPanel contentPane;
+    public JPanel launchPane;
 
     public GUI() {
         super("Application de Chat");
 
         this.messagerieAssociee = new Messagerie();
+        this.contentPane = new JPanel();
+        this.launchPane = new JPanel();
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        //Définitions -------------------------------------------------------------------------------------------------
+    }
 
-        JPanel contentPane = new JPanel();
+    public void afficherLaunchPage() {
+        this.launchPane = new JPanel();
+        setContentPane(launchPane);
+
+        JLabel enterPseudoLabel = new JLabel("Entrez votre pseudonyme :");
+        JLabel launchTitreLabel = new JLabel("Système de Chat");
+
+        JPanel layoutPane = new JPanel(new GridLayout(2,1));
+        JPanel choosePseudoPane = new JPanel(new GridLayout(2,1));
+        JPanel enterAndSendPane = new JPanel(new GridLayout(1,2));
+
+        layoutPane.add(launchTitreLabel);
+        layoutPane.add(choosePseudoPane);
+
+        choosePseudoPane.add(enterPseudoLabel);
+        choosePseudoPane.add(enterAndSendPane);
+
+        JTextField pseudoTextField = new JTextField(20);
+        JButton sendPseudoButton = new JButton("Choisir");
+        sendPseudoButton.addActionListener(e ->  this.onChoisirPseudoButtonClicked());
+
+        enterAndSendPane.add(pseudoTextField);
+        enterAndSendPane.add(sendPseudoButton);
+
+        launchPane.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        add(launchPane);
+
+        this.pack();
+        this.setVisible(true);
+        this.setLocationRelativeTo(null);
+    }
+
+    public void afficherMainPage() {
         setContentPane(contentPane);
 
         JPanel globalPane = new JPanel(new GridLayout(2, 1));
@@ -52,10 +89,6 @@ public class GUI extends JFrame {
         JTextField bufferTextField = new JTextField(20);
         bufferTextField.setToolTipText("Ecrivez ici");
 
-
-
-
-
         //Mise en page ------------------------------------------------------------------------------------------------
 
         infoAboutUserPane.add(pseudoLabel);
@@ -81,17 +114,8 @@ public class GUI extends JFrame {
         globalPane.add(informationPane);
         globalPane.add(southPane);
 
-
-
-        // Definition de la fenetre globale
         contentPane.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        add(globalPane);
-
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-    }
-
-    public void afficherMainPage() {
+        add(contentPane);
         this.pack();
         this.setVisible(true);
         this.setLocationRelativeTo(null);
@@ -99,6 +123,10 @@ public class GUI extends JFrame {
 
 
     public void onParametresButtonClicked() {
+
+    }
+
+    public void onChoisirPseudoButtonClicked() {
 
     }
 

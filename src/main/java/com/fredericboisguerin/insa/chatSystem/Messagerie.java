@@ -19,6 +19,7 @@ public class Messagerie {
 
     public void go() {
             GUI monBeauGUI = new GUI();
+            monBeauGUI.afficherLaunchPage();
             monBeauGUI.afficherMainPage();
 
             Thread UDPlistenThread = new Thread(() -> {
