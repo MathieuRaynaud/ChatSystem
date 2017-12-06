@@ -29,8 +29,32 @@ public class Messagerie {
         this.moi = myself;
     }
 
+<<<<<<< HEAD
     //Lance l'interface graphique et les deux écoutes
     public void go() throws IOException{
+=======
+    public void go() {
+            GUI monBeauGUI = new GUI();
+            monBeauGUI.afficherLaunchPage();
+            monBeauGUI.afficherMainPage();
+
+            Thread UDPlistenThread = new Thread(() -> {
+                try {
+                    this.listenOnUDPPort();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+            Thread TCPlistenThread = new Thread(() -> {
+                try {
+                    this.listenOnTCPPort();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+    }
+>>>>>>> 2fbe48ea760da52233c7236ac822a87bb8b73cd8
 
         Thread UDPlistenThread = new Thread(() -> {
             try {
