@@ -26,7 +26,8 @@ public class Main extends Application {
             messagerie.go();
 
             initLayout();
-            GUIController.getInstance().setNomUtilisateur(messagerie.moi.pseudonyme);
+            GUIController monGUI = GUIController.getInstance();
+            monGUI.setNomUtilisateur(messagerie.moi.pseudonyme);
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -39,7 +40,7 @@ public class Main extends Application {
     public void initLayout() {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/GUIController.fxml"));
-            primaryStage.setTitle("Hello World");
+            primaryStage.setTitle("Chat System");
             primaryStage.setScene(new Scene(root, 850, 400));
             primaryStage.show();
         } catch (IOException e) {
