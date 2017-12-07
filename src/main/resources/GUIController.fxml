@@ -41,16 +41,13 @@
                      <children>
                         <AnchorPane layoutX="1.0" layoutY="208.0" />
                           <ScrollPane layoutX="12.0" layoutY="7.0" prefHeight="269.0" prefWidth="567.0">
-                              <content>
-                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="235.0" prefWidth="563.0">
-                                 <children>
-                                    <TextFlow fx:id="conversationEnCours" layoutX="3.0" layoutY="4.0" prefHeight="229.0" prefWidth="556.0" />
-                                 </children></AnchorPane>
-                              </content>
+                           <content>
+                              <TextFlow fx:id="conversationEnCours" prefHeight="264.0" prefWidth="545.0"/>
+                           </content>
                           </ScrollPane>
                      </children>
                   </AnchorPane>
-                  <TextArea fx:id="zoneEcritureMessage" layoutX="12.0" layoutY="285.0" prefHeight="61.0" prefWidth="501.0" />
+                  <TextArea fx:id="textInput" layoutX="12.0" layoutY="285.0" prefHeight="61.0" prefWidth="501.0" wrapText="true" />
                   <Button fx:id="sendButton" layoutX="516.0" layoutY="303.0" mnemonicParsing="false" onAction="#onSendButtonClicked" text="Envoyer" />
                </children>
             </AnchorPane>

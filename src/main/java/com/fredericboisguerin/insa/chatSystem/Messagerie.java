@@ -1,5 +1,6 @@
 package com.fredericboisguerin.insa.chatSystem;
 
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -18,6 +19,9 @@ public class Messagerie {
     //Déclaration constantes
     final private int PORT_ECOUTE_UDP = 5555;
     final private int PORT_ECOUTE_TCP = 6666;
+    private static Messagerie instance;
+    private Thread UDPlistenThread;
+    private Thread TCPlistenThread;
 
     //Déclatarion variables
     public Utilisateur moi;
@@ -25,38 +29,11 @@ public class Messagerie {
 
     //Constructeur
     public Messagerie (Utilisateur myself){
-        mapUsersByIP = new HashMap<InetAddress, Utilisateur>();
+        this.mapUsersByIP = new HashMap<InetAddress, Utilisateur>();
         this.moi = myself;
-    }
+        this.instance=this;
 
-<<<<<<< HEAD
-    //Lance l'interface graphique et les deux écoutes
-    public void go() throws IOException{
-=======
-    public void go() {
-            GUI monBeauGUI = new GUI();
-            monBeauGUI.afficherLaunchPage();
-            monBeauGUI.afficherMainPage();
-
-            Thread UDPlistenThread = new Thread(() -> {
-                try {
-                    this.listenOnUDPPort();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-
-            Thread TCPlistenThread = new Thread(() -> {
-                try {
-                    this.listenOnTCPPort();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-    }
->>>>>>> 2fbe48ea760da52233c7236ac822a87bb8b73cd8
-
-        Thread UDPlistenThread = new Thread(() -> {
+        this.UDPlistenThread = new Thread(() -> {
             try {
                 this.listenOnUDPPort();
 
@@ -65,16 +42,29 @@ public class Messagerie {
             }
         });
 
-        Thread TCPlistenThread = new Thread(() -> {
+        this.TCPlistenThread = new Thread(() -> {
             try {
                 this.listenOnTCPPort();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
+    }
 
+    public static Messagerie getInstance() {
+        return instance;
 
+    }
 
+    //Lance l'interface graphique et les deux écoutes
+    public void go() throws IOException{
+        UDPlistenThread.start();
+        TCPlistenThread.start();
+    }
+
+    public void stop() throws IOException{
+        UDPlistenThread.interrupt();
+        TCPlistenThread.interrupt();
     }
 
     //Envoie un message quand le bouton envoyer est actionné
@@ -129,14 +119,28 @@ public class Messagerie {
             System.out.println("Ecoute de messages entrants...");
             while (true) {
                 Socket socketClient = socketServeur.accept();
-                String message = new String("");
                 BufferedReader in = new BufferedReader(new InputStreamReader(socketClient.getInputStream()));
-                PrintStream out = new PrintStream(socketClient.getOutputStream());
-                message = in.readLine();
+
+                String temp="";
+                String line;
+                while ((line = in.readLine()) != null) {
+                    if (line.isEmpty()) {
+                        break;
+                    }
+                    temp += line+"\n";
+                }
+
+                String message = temp;
+
                 System.out.println("Connexion établie avec " + socketClient.getInetAddress());
-                System.out.println("Chaîne reçue : " + message + "\n");
+                System.out.println("Chaîne reçue : " + message);
                 ajouterMessage(socketClient.getInetAddress(), message);
+
+                Platform.runLater( ( () -> GUIController.getInstance().afficherMessageRecu(message)));
+
                 socketClient.close();
+
+
             }
         } catch (Exception e) {
             e.printStackTrace();
