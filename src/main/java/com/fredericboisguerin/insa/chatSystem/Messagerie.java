@@ -74,15 +74,15 @@ public class Messagerie {
         TCPlistenThread.start();
     }
 
-    public void notifyOthersOfMyDeconnection() {
+    public void notifyOthersOfMyDisconnection() {
         String message = "disp : " + String.valueOf(moi.disponible);
         byte[] msg = message.getBytes();
         try {
             InetAddress adresseDeBroadcast = InetAddress.getByName("255.255.255.255");
             DatagramPacket dp = new DatagramPacket(msg, msg.length, adresseDeBroadcast, PORT_ENVOI_UDP);
             DatagramSocket ds = new DatagramSocket();
-            System.out.println("Exit notification datagram sent to all.");
             ds.send(dp);
+            System.out.println("Exit notification datagram sent to all.");
         }catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -92,7 +92,7 @@ public class Messagerie {
         moi.disponible = false;
         // A l'arret de l'application, on notifie les autres utilisateurs du fait qu'on est parti en se retirant de la
         // liste des contacts connectés !
-        notifyOthersOfMyDeconnection();
+        notifyOthersOfMyDisconnection();
         UDPlistenThread.interrupt();
         TCPlistenThread.interrupt();
     }
@@ -113,18 +113,18 @@ public class Messagerie {
                 //Si le message n'est pas vide alors on doit ajouter le nom de l'utilisateur
                 if (!msgrecu.equals("")) {
                     if (!mapUsersByIP.containsKey(dp.getAddress())) {
-                        if (msgrecu.contains("name : ")){
+                        if (msgrecu.contains("name : ")) {
                             //Si on reçoit un message contenant un nom nouveau on y répond avec notre nom et on l'ajoute
                             System.out.println("Ajout de l'utilisateur " + msgrecu.substring(7));
                             ajouterPersonne(msgrecu.substring(7), dp.getAddress());
                             notifyOneOfMyPresence(dp.getAddress());
                             Platform.runLater((() -> GUIController.getInstance().updateContacts()));
                         }
-                        else if (msgrecu.contains("disp :")){
-                            //Si on reçoit un message indiquant la déconnection d'un utilisateur, on le retire de la liste
-                            retirerPersonne(dp.getAddress());
-                            Platform.runLater((() -> GUIController.getInstance().updateContacts()));
-                        }
+                    }
+                    else if (msgrecu.contains("disp :")){
+                        //Si on reçoit un message indiquant la déconnection d'un utilisateur, on le retire de la liste
+                        retirerPersonne(dp.getAddress());
+                        Platform.runLater((() -> GUIController.getInstance().updateContacts()));
                     }
                 }
                 else  {
