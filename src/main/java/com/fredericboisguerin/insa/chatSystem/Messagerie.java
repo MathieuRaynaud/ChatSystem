@@ -1,12 +1,6 @@
 package com.fredericboisguerin.insa.chatSystem;
 
 import javafx.application.Platform;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
-import javafx.stage.Stage;
 
 import java.io.*;
 import java.net.*;
@@ -89,10 +83,10 @@ public class Messagerie {
     }
 
     public void stop() throws IOException{
-        moi.disponible = false;
         // A l'arret de l'application, on notifie les autres utilisateurs du fait qu'on est parti en se retirant de la
         // liste des contacts connectés !
         notifyOthersOfMyDisconnection();
+        moi.disponible = false;
         UDPlistenThread.interrupt();
         TCPlistenThread.interrupt();
     }
