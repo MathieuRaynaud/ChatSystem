@@ -74,7 +74,25 @@ public class Messagerie {
         TCPlistenThread.start();
     }
 
+    public void notifyOthersOfMyDeconnection() {
+        String message = "disp : " + String.valueOf(moi.disponible);
+        byte[] msg = message.getBytes();
+        try {
+            InetAddress adresseDeBroadcast = InetAddress.getByName("255.255.255.255");
+            DatagramPacket dp = new DatagramPacket(msg, msg.length, adresseDeBroadcast, PORT_ENVOI_UDP);
+            DatagramSocket ds = new DatagramSocket();
+            System.out.println("Exit notification datagram sent to all.");
+            ds.send(dp);
+        }catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
     public void stop() throws IOException{
+        moi.disponible = false;
+        // A l'arret de l'application, on notifie les autres utilisateurs du fait qu'on est parti en se retirant de la
+        // liste des contacts connectés !
+        notifyOthersOfMyDeconnection();
         UDPlistenThread.interrupt();
         TCPlistenThread.interrupt();
     }
@@ -95,11 +113,18 @@ public class Messagerie {
                 //Si le message n'est pas vide alors on doit ajouter le nom de l'utilisateur
                 if (!msgrecu.equals("")) {
                     if (!mapUsersByIP.containsKey(dp.getAddress())) {
-                        //Si on reçoit un message contenant un nom nouveau on y répond avec notre nom et on l'ajoute
-                        System.out.println("Ajout de l'utilisateur " + msgrecu);
-                        ajouterPersonne(msgrecu, dp.getAddress());
-                        notifyOneOfMyPresence(dp.getAddress());
-                        Platform.runLater( ( () -> GUIController.getInstance().updateContacts()));
+                        if (msgrecu.contains("name : ")){
+                            //Si on reçoit un message contenant un nom nouveau on y répond avec notre nom et on l'ajoute
+                            System.out.println("Ajout de l'utilisateur " + msgrecu.substring(7));
+                            ajouterPersonne(msgrecu.substring(7), dp.getAddress());
+                            notifyOneOfMyPresence(dp.getAddress());
+                            Platform.runLater((() -> GUIController.getInstance().updateContacts()));
+                        }
+                        else if (msgrecu.contains("disp :")){
+                            //Si on reçoit un message indiquant la déconnection d'un utilisateur, on le retire de la liste
+                            retirerPersonne(dp.getAddress());
+                            Platform.runLater((() -> GUIController.getInstance().updateContacts()));
+                        }
                     }
                 }
                 else  {
@@ -130,13 +155,13 @@ public class Messagerie {
     }
 
     public void notifyOthersOfMyPresence() {
-        String message = moi.pseudonyme;
+        String message = "name : " + moi.pseudonyme;
         byte[] msg = message.getBytes();
         try {
             InetAddress adresseDeBroadcast = InetAddress.getByName("255.255.255.255");
             DatagramPacket dp = new DatagramPacket(msg, msg.length, adresseDeBroadcast, PORT_ENVOI_UDP);
             DatagramSocket ds = new DatagramSocket();
-            System.out.println("Notification datagram sent to all.");
+            System.out.println("Presence notification datagram sent to all.");
             ds.send(dp);
         }catch (IOException ex) {
             ex.printStackTrace();
@@ -145,7 +170,7 @@ public class Messagerie {
 
     public void notifyOneOfMyPresence(InetAddress ip) {
         if (moi!=null) {
-            String message = moi.pseudonyme;
+            String message = "name : " + moi.pseudonyme;
             byte[] msg = message.getBytes();
             try {
                 InetAddress adresseCible = ip;
@@ -228,6 +253,13 @@ public class Messagerie {
     private void ajouterPersonne(String nom, InetAddress ip) {
         mapUsersByIP.put(ip,new Utilisateur(nom, ip));
         mapNamesByIP.put(ip,nom);
+    }
+
+    //Retrait d'un contact de la liste
+    private void retirerPersonne(InetAddress ip){
+        Utilisateur toRemove = mapUsersByIP.get(ip);
+        mapUsersByIP.remove(ip, toRemove);
+        mapNamesByIP.remove(ip, toRemove.pseudonyme);
     }
 
 
