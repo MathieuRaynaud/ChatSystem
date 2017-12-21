@@ -2,9 +2,13 @@ package com.fredericboisguerin.insa.chatSystem;
 
 import javafx.application.Platform;
 
+import javax.rmi.CORBA.Util;
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 
 
 public class Messagerie {
@@ -84,9 +88,17 @@ public class Messagerie {
 
     public void stop() throws IOException{
         // A l'arret de l'application, on notifie les autres utilisateurs du fait qu'on est parti en se retirant de la
-        // liste des contacts connectés !
-        notifyOthersOfMyDisconnection();
-        moi.disponible = false;
+        // liste des contacts connectés, et on enregistre chacune des conversations avec les autres utilisateurs !
+        Collection<Utilisateur> listConnectedUsers = mapUsersByIP.values();
+        Iterator<Utilisateur> user = listConnectedUsers.iterator();
+        while (user.hasNext()){
+            Utilisateur actuel = user.next();
+            actuel.conv.enregistrerConversation();
+        }
+        if (moi != null) {
+            notifyOthersOfMyDisconnection();
+            moi.disponible = false;
+        }
         UDPlistenThread.interrupt();
         TCPlistenThread.interrupt();
     }
@@ -116,7 +128,8 @@ public class Messagerie {
                         }
                     }
                     else if (msgrecu.contains("disp :")){
-                        //Si on reçoit un message indiquant la déconnection d'un utilisateur, on le retire de la liste
+                        //Si on reçoit un message indiquant la déconnection d'un utilisateur, on le retire de la liste et on sauvegarde notre conversation avec lui
+                        mapUsersByIP.get(dp.getAddress()).conv.enregistrerConversation();
                         retirerPersonne(dp.getAddress());
                         Platform.runLater((() -> GUIController.getInstance().updateContacts()));
                     }
@@ -231,6 +244,7 @@ public class Messagerie {
             Socket socket = new Socket(ipAddress, PORT_ENVOI_TCP);
             PrintStream out = new PrintStream(socket.getOutputStream());
             out.println(message);
+            mapUsersByIP.get(ipAddress).conv.ajouterMessage("Moi",message);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -239,7 +253,7 @@ public class Messagerie {
     //Ajour d'un message entrant à la conversation
     private void ajouterMessage (InetAddress ip, String message) {
         if (mapUsersByIP.containsValue(ip))
-            mapUsersByIP.get(ip).conv.ajouterMessage(message);
+            mapUsersByIP.get(ip).conv.ajouterMessage(mapUsersByIP.get(ip).pseudonyme, message);
 
     }
 

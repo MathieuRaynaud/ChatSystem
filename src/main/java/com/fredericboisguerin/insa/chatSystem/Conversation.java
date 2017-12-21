@@ -11,8 +11,10 @@ public class Conversation {
 
     // ATTRIBUTS
 
+    private FileManager fileManager;
     private Utilisateur utilisateurDistant;
     private ArrayList<String> conversation;
+    private ArrayList<StringTuple> sauvegarde;
 
     // CONSTRUCTEUR
 
@@ -20,14 +22,10 @@ public class Conversation {
             this.utilisateurDistant = utilisateur;
             //this.conversation = recupererHistorique(utilisateur);
             this.conversation = new ArrayList<String>();
-
+            this.sauvegarde = new ArrayList<StringTuple>();
     }
 
     // METHODES
-
-    public void fermerConversation(){
-        enregistrerConversation();
-    }
 
     public ArrayList<String> recupererHistorique(Utilisateur utilisateurDistant) throws IOException {
         ArrayList<String> hist = new ArrayList<String>();
@@ -38,12 +36,15 @@ public class Conversation {
         return hist;
     }
 
-    public void ajouterMessage(String msg) {
-        conversation.add(msg);
+    public void ajouterMessage(String emetteur, String msg) {
+        if (emetteur != "Moi") conversation.add(msg);
+        //On crée un tuple contenant l'emetteur du message et le message lui-meme, et on le sauvegarde dans la conversation
+        StringTuple temp = new StringTuple(emetteur,msg);
+        sauvegarde.add(temp);
     }
 
     public void enregistrerConversation (){
-        ArrayList<String> conv = new ArrayList<String>();
+        fileManager.getInstance().saveConv(utilisateurDistant.pseudonyme, sauvegarde);
     }
 
 }
